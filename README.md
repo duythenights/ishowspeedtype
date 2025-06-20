@@ -1,39 +1,42 @@
-# ishowspeedtype
+# ⚡ IShowSpeedType
 
-This template should help get you started developing with Vue 3 in Vite.
+A fast and fun typing practice web app inspired by [Monkeytype](https://monkeytype.com) and the energy of **IShowSpeed**.
 
-## Recommended IDE Setup
+Built with **Vue 3 + TypeScript**, this project focuses on real-time typing feedback, performance tracking, and a smooth UI experience.
 
-[VSCode](https://code.visualstudio.com/) + [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+---
 
-## Type Support for `.vue` Imports in TS
+## 🚀 Features
 
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
+- ⚡ Real-time typing accuracy and speed tracking
+- 🎨 Clean UI with energetic overlays inspired by IShowSpeed
+- 📱 Fully responsive and mobile-friendly
+- 🎯 Visual feedback on each letter (correct / incorrect / pending)
+- 🧩 Component-based architecture with Vue 3 Composition API
+- 🧼 Prettier & ESLint integration for clean code
 
-## Customize configuration
+---
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+## 🛠️ Tech Stack
 
-## Project Setup
+- **Vue 3** + **TypeScript**
+- **Vite** for lightning-fast dev server and builds
+- **Tailwind CSS** for styling
+- **Lucide Icons** for SVG icons
+- **Prettier** + **ESLint** for formatting and linting
 
-```sh
+---
+
+## 📦 Installation
+
+```bash
+# Clone the repo
+git clone https://github.com/your-username/speedtype.git
+cd speedtype
+
+# Install dependencies
 npm install
-```
 
-### Compile and Hot-Reload for Development
-
-```sh
+# Start dev server
 npm run dev
-```
-
-### Type-Check, Compile and Minify for Production
-
-```sh
-npm run build
-```
-
-### Lint with [ESLint](https://eslint.org/)
-
-```sh
-npm run lint
 ```
