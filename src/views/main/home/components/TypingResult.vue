@@ -142,12 +142,16 @@ onMounted(() => {
         <span class="text-amber-500 text-4xl">{{ item.value }}</span>
       </div>
     </div>
-    <div class="flex mt-2 justify-center text-white gap-10">
+    <div class="flex mt-8 justify-center text-white gap-10">
       <div @click="emit('retry')">
-        <RefreshCcw class="text-primary-foreground/70 hover:text-primary-foreground" />
+        <RefreshCcw
+          class="cursor-pointer text-primary-foreground/70 hover:text-primary-foreground"
+        />
       </div>
       <div @click="emit('next')">
-        <ChevronRight class="text-primary-foreground/70 hover:text-primary-foreground" />
+        <ChevronRight
+          class="cursor-pointer text-primary-foreground/70 hover:text-primary-foreground"
+        />
       </div>
     </div>
   </div>

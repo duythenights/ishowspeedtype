@@ -3,10 +3,10 @@
     class="mx-auto flex flex-col justify-center items-center mb-4 gap-2 mt-4 text-white text-[12px] leading-relaxed tracking-wide"
   >
     <div class="flex justify-center items-center gap-3">
-      <span class="key">ctrl</span> + <span class="key">enter</span> - retry
+      <span class="key">ctrl</span> + <span class="key">enter</span> - <span>retry</span>
     </div>
     <div class="flex justify-center items-center gap-3">
-      <span class="key">alt</span> + <span class="key">enter</span> - next
+      <span class="key">alt</span> + <span class="key">enter</span> - <span>next</span>
     </div>
   </div>
 </template>
