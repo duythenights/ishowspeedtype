@@ -1,13 +1,18 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
-import { LETTER_STATUS } from './services/type'
-import { MousePointerClick } from 'lucide-vue-next'
+import Button from '@/components/ui/button/Button.vue'
 import { cn } from '@/lib/utils'
+import { DATA } from '@/services/data'
+import { MousePointerClick } from 'lucide-vue-next'
+import { computed, onMounted, ref, watch } from 'vue'
+import TypingResult from './components/TypingResult.vue'
+import { LETTER_STATUS } from './services/type'
 
-const text = ref('script')
+const text = ref('')
 
 const words = computed(() => text.value.split(' '))
+
 const typedStatus = ref<Array<Array<LETTER_STATUS>>>([])
+const totalTyped = ref(0)
 
 const currentWordIndex = ref(0)
 const currentLetterIndex = ref(0)
@@ -16,14 +21,78 @@ const isStarted = ref(false)
 const isFinished = ref(false)
 const startTime = ref(0)
 const endTime = ref(0)
+const wpmRecords = ref<{ time: number; wpm: number }[]>([])
 
 const isFocusing = ref(false)
 const typingContainer = ref<HTMLDivElement | null>(null)
 
-onMounted(() => {
+const options = [10, 20, 30]
+const currentOption = ref(10)
+const handleSelectOption = (option: number) => {
+  currentOption.value = option
   resetTypedStatus()
-  typingContainer.value?.focus()
+}
+
+watch(currentOption, (newCount) => {
+  text.value = generateRandomText(newCount)
 })
+
+watch(text, () => {
+  typingContainer.value?.focus()
+  handleFocus()
+})
+
+function generateRandomText(count: number) {
+  const shuffled = [...DATA].sort(() => 0.5 - Math.random())
+  return shuffled.slice(0, count).join(' ')
+}
+
+onMounted(() => {
+  typingContainer.value?.focus()
+  text.value = generateRandomText(currentOption.value)
+  resetTypedStatus()
+})
+function calculateWPM(): number {
+  const elapsedTimeMs = Date.now() - startTime.value
+  const elapsedTimeMin = elapsedTimeMs / 1000 / 60
+
+  if (elapsedTimeMs < 200) return 0 // Ignore data if under 200ms
+
+  let correctCharCount = 0
+
+  for (let i = 0; i <= currentWordIndex.value; i++) {
+    const statuses = typedStatus.value[i]
+
+    const limit =
+      i === currentWordIndex.value
+        ? Math.min(currentLetterIndex.value, statuses.length)
+        : statuses.length
+
+    for (let j = 0; j < limit; j++) {
+      if (statuses[j] === LETTER_STATUS.CORRECT) {
+        correctCharCount++
+      }
+    }
+  }
+
+  const wordsTyped = correctCharCount / 5
+  return Math.round(wordsTyped / elapsedTimeMin)
+}
+function recordWPM() {
+  const elapsedTime = Date.now() - startTime.value
+  if (elapsedTime < 500) return
+
+  const wpm = calculateWPM()
+  if (wpm === 0) return
+
+  const last = wpmRecords.value[wpmRecords.value.length - 1]
+  if (!last || Math.abs(last.wpm - wpm) >= 1) {
+    wpmRecords.value.push({
+      time: elapsedTime,
+      wpm,
+    })
+  }
+}
 
 function resetTypedStatus() {
   typedStatus.value = words.value.map((word) => new Array(word.length).fill(LETTER_STATUS.PENDING))
@@ -33,22 +102,50 @@ function resetTypedStatus() {
   isStarted.value = false
   startTime.value = 0
   endTime.value = 0
+  totalTyped.value = 0
+  wpmRecords.value = []
+}
+
+watch(words, () => {
+  typedStatus.value = words.value.map((word) => new Array(word.length).fill(LETTER_STATUS.PENDING))
+})
+function handleRetry() {
+  resetTypedStatus()
+
+  setTimeout(() => {
+    typingContainer.value?.focus()
+  }, 0)
+}
+
+function handleNext() {
+  text.value = generateRandomText(currentOption.value)
+  resetTypedStatus()
+
+  setTimeout(() => {
+    typingContainer.value?.focus()
+  }, 0)
 }
 
 const handleFocus = () => (isFocusing.value = true)
 
 const handleBlur = () => {
-  setTimeout(() => (isFocusing.value = false), 300)
+  isFocusing.value = false
 }
 
 function checkLetterStatus(idx: number, subIdx: number) {
+  const isCurrent = idx === currentWordIndex.value && subIdx === currentLetterIndex.value
+  const isEnd =
+    currentWordIndex.value === idx &&
+    currentLetterIndex.value === subIdx + 1 &&
+    currentLetterIndex.value === words.value[idx].length
+
   return cn('text-4xl font-light relative leading-snug', {
     'text-primary': typedStatus.value?.[idx]?.[subIdx] === LETTER_STATUS.CORRECT,
     'text-red-400': typedStatus.value?.[idx]?.[subIdx] === LETTER_STATUS.INCORRECT,
     'text-accent': typedStatus.value?.[idx]?.[subIdx] === LETTER_STATUS.PENDING,
-    'current-pivet': idx === currentWordIndex.value && subIdx === currentLetterIndex.value,
     'is-first': idx === 0 && subIdx === 0,
-    'current-end-pivet': currentWordIndex.value === idx && currentLetterIndex.value === subIdx + 1,
+    'current-pivet': isFocusing.value && isCurrent && !isEnd,
+    'current-end-pivet': isFocusing.value && isEnd,
   })
 }
 
@@ -66,13 +163,15 @@ function handleKeyDown(e: KeyboardEvent) {
 
   if (key.length === 1) {
     // handle space
+    totalTyped.value++
     if (key === ' ') {
-      if (currentLetterIndex.value > 0) {
+      if (currentLetterIndex.value > 0 && currentWordIndex.value < words.value.length - 1) {
         currentWordIndex.value++
         currentLetterIndex.value = 0
       }
       return
     }
+
     if (
       currentWordIndex.value === words.value.length - 1 &&
       currentLetterIndex.value === word.length - 1
@@ -93,6 +192,7 @@ function handleKeyDown(e: KeyboardEvent) {
       if (currentLetterIndex.value === word.length) return
       currentLetterIndex.value++
     }
+    recordWPM()
   } else if (key === 'Backspace') {
     if (currentLetterIndex.value > 0) {
       currentLetterIndex.value--
@@ -109,10 +209,20 @@ function handleKeyDown(e: KeyboardEvent) {
 </script>
 
 <template>
-  <div class="flex flex-col w-full h-full items-center">
-    <div class="py-10">Toolbar here</div>
+  <div class="flex flex-col flex-1 w-full h-full overflow-hidden items-center">
+    <div v-if="!isFinished" class="py-1 border px-3 mb-2 rounded-md">
+      <Button
+        v-for="item in options"
+        :onclick="() => handleSelectOption(item)"
+        :class="cn('cursor-pointer', currentOption === item && 'bg-primary')"
+        :key="item"
+        variant="secondary"
+        >{{ item }}</Button
+      >
+    </div>
 
     <div
+      v-if="!isFinished"
       tabindex="0"
       ref="typingContainer"
       @keydown.prevent.stop="handleKeyDown"
@@ -131,17 +241,23 @@ function handleKeyDown(e: KeyboardEvent) {
           </span>
         </div>
       </div>
-      <div v-if="isFinished">done</div>
 
       <div
         v-if="!isFocusing"
-        class="pointer-events-none absolute w-full h-full inset-0 bg-secondary/80 backdrop:blur-2xl text-white flex justify-center items-center gap-3"
+        class="pointer-events-none absolute w-full h-full inset-0 bg-accent/80 rounded-3xl backdrop:blur-2xl text-white flex justify-center items-center gap-3"
       >
         <MousePointerClick /> Click here to focus
       </div>
     </div>
 
-    <div class="py-20">Footer</div>
+    <TypingResult
+      @next="handleNext"
+      @retry="handleRetry"
+      v-else
+      :wpm-record="wpmRecords"
+      :totalTyped="totalTyped"
+      :text="text"
+    />
   </div>
 </template>
 
@@ -149,6 +265,7 @@ function handleKeyDown(e: KeyboardEvent) {
 .current-pivet {
   position: relative;
   height: 100%;
+  transition: all ease;
 }
 .current-pivet::after {
   position: absolute;

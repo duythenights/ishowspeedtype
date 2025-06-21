@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import MainFooter from './components/layout/MainFooter.vue'
 import MainHeader from './components/layout/MainHeader.vue'
 </script>
 
@@ -9,6 +10,7 @@ import MainHeader from './components/layout/MainHeader.vue'
       <div class="flex-1">
         <RouterView />
       </div>
+      <MainFooter />
     </div>
   </div>
 </template>
