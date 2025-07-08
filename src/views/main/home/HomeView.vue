@@ -142,7 +142,7 @@ function checkLetterStatus(idx: number, subIdx: number) {
   return cn('text-4xl font-light relative leading-snug', {
     'text-primary': typedStatus.value?.[idx]?.[subIdx] === LETTER_STATUS.CORRECT,
     'text-red-400': typedStatus.value?.[idx]?.[subIdx] === LETTER_STATUS.INCORRECT,
-    'text-accent': typedStatus.value?.[idx]?.[subIdx] === LETTER_STATUS.PENDING,
+    'text-accent-foreground/80': typedStatus.value?.[idx]?.[subIdx] === LETTER_STATUS.PENDING,
     'is-first': idx === 0 && subIdx === 0,
     'current-pivet': isFocusing.value && isCurrent && !isEnd,
     'current-end-pivet': isFocusing.value && isEnd,
@@ -230,7 +230,7 @@ function handleKeyDown(e: KeyboardEvent) {
       @blur="handleBlur"
       class="relative w-full outline-none gap-x-3 py-10 flex flex-1 items-center justify-center"
     >
-      <div class="flex flex-wrap gap-y-10 gap-x-3 justify-center text-accent">
+      <div class="flex flex-wrap gap-y-10 gap-x-3 justify-center">
         <div v-for="(word, idx) in words" :key="idx" class="h-fit flex">
           <span
             v-for="(letter, subIdx) in word.split('')"
